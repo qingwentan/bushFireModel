@@ -1,0 +1,5 @@
+﻿Truck_strategy,Width,Height,num_firetruck,vision,max_speed,steps_to_extinguish,placed_on_edges
+Goes to the biggest fire,2000,2000,30,100,90,1,True
+Parallel attack,2000,2000,35,100,100,1,True
+Indirect attack,2000,2000,40,100,110,1,False
+Goes to the closest fire,2000,2000,45,100,120,1,False
