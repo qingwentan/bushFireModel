@@ -1,0 +1,159 @@
+{
+    "startConditions": {
+        "features": [
+            {
+                "geometry": {
+                    "coordinates": [
+                        144.318,
+                        -37.429
+                    ],
+                    "type": "Point"
+                },
+                "properties": {
+                    "radius": 100,
+                    "time": 0
+                },
+                "type": "Feature"
+            }
+        ],
+        "type": "FeatureCollection"
+    },
+    "startDateISO8601": "2020-01-01T08:00:00Z",
+    "resolutionMeters": 30,
+    "projection": "+proj=lcc +lat_1=-36 +lat_2=-38 +lat_0=-37 +lon_0=145 +x_0=2500000 +y_0=2500000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs",
+    "outputProjection": "+proj=lcc +lat_1=-36 +lat_2=-38 +lat_0=-37 +lon_0=145 +x_0=2500000 +y_0=2500000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs",
+    "seriesCSVFile": "./test_spark_weather.csv",
+    "durationSeconds": 39600,
+    "outputIsochroneTimeSeconds": 3600,
+    "outputIsochroneJSONFile": "./_out_spark_contour.geojson",
+    "inputLayers": [
+        {
+            "name": "elevation",
+            "source": "./test_land_elevation_tiles.tif",
+            "projection": "+proj=lcc +lat_1=-36 +lat_2=-38 +lat_0=-37 +lon_0=145 +x_0=2500000 +y_0=2500000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs"
+        },
+        {
+            "name": "last_burn",
+            "source": "./test_date_tiles.tif",
+            "projection": "+proj=lcc +lat_1=-36 +lat_2=-38 +lat_0=-37 +lon_0=145 +x_0=2500000 +y_0=2500000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs",
+            "type": "integer"
+        },
+        {
+            "name": "classification",
+            "source": "./test_land_class_tiles.tif",
+            "projection": "+proj=lcc +lat_1=-36 +lat_2=-38 +lat_0=-37 +lon_0=145 +x_0=2500000 +y_0=2500000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs",
+            "type": "integer"
+        }
+    ],
+    "outputLayers": [
+        {
+            "name": "model_ID",
+            "destination": "./_out_spark_modelID.tif",
+            "description": "Wildfire spread model ID",
+            "sampling": "nearest"
+        },
+        {
+            "name": "fuel_age_yrs",
+            "destination": "./_out_spark_fuelAgeYrs.tif",
+            "description": "Fuel age in years",
+            "units": "years",
+            "sampling": "nearest"
+        },
+        {
+            "name": "arrival_time",
+            "destination": "./_out_spark_arrivalTime.tif",
+            "description": "Cell arrival time",
+            "units": "seconds",
+            "sampling": "linear",
+            "reduction": "maximum"
+        },
+        {
+            "name": "area",
+            "reduction": "sum"
+        },
+        {
+            "name": "real_time_speed"
+        },
+        {
+            "name": "real_time_intensity"
+        },
+        {
+            "name": "max_intensity"
+        }
+    ],
+    "variables": {
+        "fuel_age": 30
+    },
+    "initialisationModel": "// Class mappings\nint class_total = 51;\nint class_count[] = {2, 18, 14, 12, 2, 2, 1};\nint class_map[] = {\n  0, 47,\n  2, 6, 7, 8, 11, 12, 13, 15, 22, 28, 32, 33, 38, 40, 41, 43, 45, 99,\n  4, 9, 16, 19, 20, 29, 30, 34, 36, 37, 39, 42, 46, 97,\n  1, 3, 5, 10, 14, 17, 18, 21, 23, 24, 31, 35,\n  25, 27,\n  26, 44,\n  98\n};\n\n// Reset class\nclass = 0;\n\n// Re-map classifications\nint count = 0;\nint current_class = 0;\nfor (int c = 0; c < class_total; c++, count++) {\n  if (class_map[c] == (uint)classification) {\n    class = current_class;\n    break;\n  }\n  if (count >= class_count[current_class]) {\n    current_class++;\n    count = 0;\n  }\n}\n\n// Calculate years since burn\nfuel_age_yrs = fuel_age;\nif (last_burn > 0) {\n\n    int date = (int)last_burn;\n    int yy = date/10000;\n    int mm = (date/100)%100;\n    int dd = date%100;\n\n    REAL JD_fuel = Julian_date_from_date(yy, mm, dd);\n    REAL JD_now = Julian_date;\n\n    // Cap burn years to 30\n    REAL days_since_burn = JD_now-JD_fuel;\n    if (days_since_burn > 0.0)\n        fuel_age_yrs = min(days_since_burn/365.0, 30.0);\n\n}\n\n// Write output layers\nmodel_ID = class;\n\n// Set mask\nif (mask < 0.0)\n  class = 0;",
+    "rateOfSpreadModels": {
+        "1": "// Dry eucalypt model; parameters: 1. Temperature, 'temp', 2. Relative humidity, 'rel_hum', 3. Surface fuel hazard score, 'fuel_hazard_score_surface', 4. Near-surface fuel hazard score, 'fuel_hazard_score_near_surface', 5. Near surface height, 'fuel_height_near_surface'\n\nREAL fuel_hazard_score_surface = 4.0;\nREAL fuel_hazard_score_near_surface = 4.0;\nREAL fuel_height_near_surface = 0.5;\n\n// Get wind component in normal direction\nREAL wdot = dot(normalize(advect_vector), advect_normal_vector);\n\n// Estimating fuel moisture content using Gould et al. (2007) and Matthews et al. (2010)\nREAL Mf;\nif (hour > 11 && hour < 17) {\n    // Between 12:00 and 16:59 (valid for sunny days from October to March)\n    Mf = 2.76 + (0.124*rel_hum) - (0.0187*temp);\n} else if ((hour < 12 && hour > 8) || (hour > 16 & hour < 20)) {\n    // Other daylight hours (from 9:00 to 11:59 and 17:00 to 19:59 in this example)\n    Mf = 3.6 + (0.169*rel_hum) - (0.045*temp);\n} else {\n    // Night time hours (from 20:00 to 8:59) in this example\n    Mf =  3.08 + (0.198*rel_hum) - (0.0483*temp);\n} \n\n// Calculate moisture coefficients from Burrows (1999)\nREAL moisture_coeff = 18.35 * pow(Mf,-1.495);\n\n// Calculate length-to-breadth ratio (LBR)\nREAL LBR = 1.0;\nif (wind_speed < 5) {\n    LBR = 1.0;\n} else if (wind_speed < 25){\n    LBR = 0.9286 * exp(0.0505 * wind_speed);\n} else {\n    LBR = 0.1143 * wind_speed + 0.4143;\n}\n\n// Determine coefficient for flank rank of spread, Rf = cf * Rh, using Andrew's LBR equations\nREAL cc = sqrt(1.0-pow(LBR, -2.0));\nREAL cb = (1.0-cc)/(1.0+cc);\nREAL a_LBR = 0.5*(cb+1.0);\nREAL cf = a_LBR/LBR;\n\n// Determine shape parameters from Jason's document\n// Note: here what we define as [f/g/h] would be [f/Rhead, g/Rhead, and h/Rhead] in Jason's equations\nREAL f = 0.5*(1.0+cb);\nREAL g = 0.5*(1.0-cb);\nREAL h = cf;\n\n// Now calculate speed coefficient using normal flow formula in Jason's document\nREAL speed_fraction = (g*wdot+sqrt(h*h+(f*f-h*h)*wdot*wdot));\n\n// Calculate spread rate (in m/s)\nREAL head_speed;\nif (wind_speed > 5) {\n    head_speed = (30.0+1.5308* \n        pow(wind_speed-5, 0.8576)* \n        pow(fuel_hazard_score_surface, 0.9301)* \n        pow(fuel_hazard_score_near_surface*fuel_height_near_surface, 0.6366)*1.03)*\n        moisture_coeff*0.000277778;\n} else {\n    head_speed = 30.0*moisture_coeff*0.000277778;\n}\n\n// Adjust for calculated speed coefficient for fire flanks\nspeed = head_speed*speed_fraction;\n\n\n",
+        "2": "// Grasslands model; parameters: 1. Temperature, 'temp', 2. Relative humidity, 'rel_hum', 3. Curing value, 'curing'\n\nREAL curing = 90.0;\n\n// Get wind component in normal direction\nREAL wdot = dot(normalize(advect_vector), advect_normal_vector);\n\n// Calculate length-to-breadth ratio (LBR) for grassland\nREAL LBR = 1.0;\nif (wind_speed < 5.0) {\n  LBR = 1.0;\n} else {\n  LBR = 1.1*pow(wind_speed, 0.464);\n}\n\n// Determine coefficient for flank rank of spread, Rf = cf * Rh, using Andrew's LBR equations\nREAL cc = sqrt(1.0-pow(LBR, -2.0));\nREAL cb = (1.0-cc)/(1.0+cc);\nREAL a_LBR = 0.5*(cb+1.0);\nREAL cf = a_LBR/LBR;\n\n// Determine shape parameters from Jason's document\n// Note: here what we define as [f/g/h] would be [f/Rhead, g/Rhead, and h/Rhead] in Jason's equations\nREAL f = 0.5*(1.0+cb);\nREAL g = 0.5*(1.0-cb);\nREAL h = cf;\n\n// Now calculate a speed coefficient using normal flow formula in Jason's document\nREAL speed_fraction = (g*wdot+sqrt(h*h+(f*f-h*h)*wdot*wdot));\n\n// Calculate curing coefficient from Cruz et al. (2015)\nREAL curing_coeff;\nif (curing < 20)\n    curing_coeff = 0;\nelse\n    curing_coeff = 1.036/(1.0+103.989*exp(-0.0996*(curing-20)));\n\n// Fuel moisture content approximated using McArthur (1966)\nREAL GMf = 9.58-(0.205*temp)+(0.138*rel_hum);\n\n// Calculate moisture coefficient from Cheney et al. (1998)\nREAL moisture_coeff;\nif (GMf <= 12)\n    moisture_coeff = exp(-0.108*GMf);\nelse if (wind_speed <= 10)\n    moisture_coeff = 0.684-0.0342*GMf;\nelse\n    moisture_coeff = 0.547-0.0228*GMf;\n\n// Natural/Northern open\nREAL CF_Backing_Slow = 0.054;\nREAL CF_Backing_Fast = 1.4;\nREAL CF_Wind_Slow = 0.269;\nREAL CF_Wind_Fast = 0.838; \n\n// Calculate spread rate from Cheney et al. (1998) (need to convert spread rate to m/s from km/hr)\nREAL head_speed = 0.0;\nif (wind_speed >= 5.0)\n    head_speed = (CF_Backing_Fast+CF_Wind_Fast*pow((wind_speed-5.0), 0.844))*moisture_coeff*curing_coeff*0.2778;\nelse\n    head_speed = (CF_Backing_Slow+CF_Wind_Slow*wind_speed)*moisture_coeff*curing_coeff*0.2778;\n\n// Adjust for calculated speed coefficient for fire flanks\nspeed = head_speed*speed_fraction;\n",
+        "3": "// Heathland model; parameters: 1. Temperature, 'temp', 2. Relative humidity, 'rel_hum', 3. Wind reduction factor, 'WF', 4. Average fuel height, 'fuel_height_elevated', 5. Rate of spread for zero wind, 'R0', 6. Solar radiation factor, 'delta'\n\nREAL fuel_height_elevated = 1.0;\nREAL WF = 0.67; // Value of 0.67 for heath-shrublands and 0.35 for woodlands.\nREAL R0 = 5.0; // Recommended as 5 m/min.\n\n// Initialising the solar radiation variable\n// delta = 1 for sunny days from 12:00 - 17:00 from October to March (high solar radiation) and 0 otherwise.\nREAL delta = (hour > 11 && hour < 17) ? 1 : 0;\n\n// Get wind component in normal direction\nREAL wdot = dot(normalize(advect_vector), advect_normal_vector);\n\n// Calculate length-to-breadth ratio (LBR) for grassland\nREAL LBR = 1.0;\nif (wind_speed < 5) {\n  LBR = 1.0;\n} else {\n  LBR = 1.1*pow(wind_speed, 0.464);\n}\n\n// Determine coefficient for flank rank of spread, Rf = cf * Rh, using Andrew's LBR equations\nREAL cc = sqrt(1.0-pow(LBR, -2.0));\nREAL cb = (1.0-cc)/(1.0+cc);\nREAL a_LBR = 0.5*(cb+1.0);\nREAL cf = a_LBR/LBR;\n\n// Determine shape parameters from Jason's document\n// Note: here what we define as [f/g/h] would be [f/Rhead, g/Rhead, and h/Rhead] in Jason's equations\nREAL f = 0.5*(1.0+cb);\nREAL g = 0.5*(1.0-cb);\nREAL h = cf;\n\n// Now calculate a speed coefficient using normal flow formula in Jason's document\nREAL speed_fraction = (g*wdot+sqrt(h*h+(f*f-h*h)*wdot*wdot));\n\n// Calculating moisture content \nREAL MC = 4.37+0.161*rel_hum-0.1*(temp-25)-delta*0.027*rel_hum;\n\n// Calculating rate of spread in m/min\nREAL head_speed;\nif (wind_speed < 5){\n    head_speed = (R0+0.2*(5.67*pow(5*WF, 0.91)-R0)*wind_speed)*pow(fuel_height_elevated, 0.22)*exp(-0.076*MC);\n} else {\n    head_speed = 5.67*pow(WF*wind_speed, 0.91)*pow(fuel_height_elevated, 0.22)*exp(-0.076*MC);\n}\n\n// Converting spread rate into m/s\nhead_speed = head_speed*0.01667;\n\n// Adjust for calculated speed coefficient for fire flanks\nspeed = head_speed*speed_fraction;\n",
+        "4": "// Semi-arid mallee heath model; parameters: 1. Temperature, 'temp', 2. Relative humidity, 'rel_hum', 3. Mallee overstorey height, 'fuel_height_elevated', 4. Overstorey mallee cover, 'overstory_cover_score', 5. Solar radiation factor, 'delta'\n\nREAL fuel_height_elevated = 0.5;\nREAL overstory_cover_score = 17.0;\n\n// Initialising the solar radiation variable\n// delta = 1 for sunny days from 12:00 - 17:00 from October to March (high solar radiation) and 0 otherwise.\nREAL delta = (hour > 11 && hour < 17) ? 1 : 0;\n\n// Calculating moisture content for heath dominated vegetation using Cruz (2010)\nREAL MC = 4.37+0.161*rel_hum-0.1*(temp-25)-delta*0.027*rel_hum;\n\n// Get wind component in normal direction\nREAL wdot = dot(normalize(advect_vector), advect_normal_vector);\n\n// Calculate length-to-breadth ratio (LBR)\nREAL LBR = 1.0;\nif (wind_speed < 5) {\n  LBR = 1.0;\n} else if (wind_speed < 25){\n  LBR = 0.9286*exp(0.0505*wind_speed);\n} else {\n  LBR = 0.1143*wind_speed+0.4143;\n}\n\n// Determine coefficient for flank rank of spread, Rf = cf * Rh, using Andrew's LBR equations\nREAL cc = sqrt(1.0-pow(LBR, -2.0));\nREAL cb = (1.0-cc)/(1.0+cc);\nREAL a_LBR = 0.5*(cb+1.0);\nREAL cf = a_LBR/LBR;\n\n// Determine shape parameters from Jason's document\n// Note: here what we define as [f/g/h] would be [f/Rhead, g/Rhead, and h/Rhead] in Jason's equations\nREAL f = 0.5*(1.0+cb);\nREAL g = 0.5*(1.0-cb);\nREAL h = cf;\n\n// Now calculate a speed coefficient using normal flow formula in Jason's document\nREAL speed_fraction = (g*wdot+sqrt(h*h+(f*f-h*h)*wdot*wdot));\n\n// Calculating probability of crowning\nREAL Pc = 1.0/(1.0+exp(-(-11.138+1.4054*wind_speed-3.4217*MC)));\n\n// Calculating surface fire rate of spread\nREAL Rs = 3.337*wind_speed*exp(-0.1284*MC)*pow(fuel_height_elevated, -0.7073);\n\n// Calculating crown fire rate of spread\nREAL Rc = 9.5751*wind_speed*exp(-0.1795*MC)*pow(0.01*overstory_cover_score, 0.3589);\n\n// Weighting total rate of spread based on probability of crowning\nREAL head_speed = (1.0-Pc)*Rs+Pc*Rc;\n\n// Converting spread rate into m/s\nspeed = speed_fraction*head_speed*0.01667;\n",
+        "5": "// Hummock spinifex grasslands; parameters: 1. Spinifex moisture content, 'm', 2. Fuel cover, 'overstory_cover_score'\n\nREAL m = 5;\nREAL overstory_cover_score = 19.0;\n\n// Get wind component in normal direction\nREAL wdot = dot(normalize(advect_vector), advect_normal_vector);\n\n// Calculate length-to-breadth ratio (LBR) for grassland\nREAL LBR = 1.0;\nif (wind_speed < 5) {\n  LBR = 1.0;\n} else {\n  LBR = 1.1*pow(wind_speed, 0.464);\n}\n\n// Determine coefficient for flank rank of spread, Rf = cf * Rh, using Andrew's LBR equations\nREAL cc = sqrt(1.0-pow(LBR, -2.0));\nREAL cb = (1.0-cc)/(1.0+cc);\nREAL a_LBR = 0.5*(cb+1.0);\nREAL cf = a_LBR/LBR;\n\n// Determine shape parameters from Jason's document\n// Note: here what we define as [f/g/h] would be [f/Rhead, g/Rhead, and h/Rhead] in Jason's equations\nREAL f = 0.5*(1.0+cb);\nREAL g = 0.5*(1.0-cb);\nREAL h = cf;\n\n// Now calculate a speed coefficient using normal flow formula in Jason's document\nREAL speed_fraction = (g*wdot+sqrt(h*h+(f*f-h*h)*wdot*wdot));\n\n// Calculate spread criteria\nREAL SI = 0.305*wind_speed + 0.311*overstory_cover_score - 0.676*m - 4.073;\n\nif (SI > 0) {\n\n    // Calculate speed\n    REAL head_speed = 40.982*pow(wind_speed, 1.275)*pow(overstory_cover_score, 1.201)/pow(m, 1.699);\n\n    // Convert from m/h to m/s\n    head_speed *= 0.000277778;\n\n    // Adjust for calculated speed coefficient for fire flanks\n    speed = head_speed*speed_fraction;\n\n} else {\n   speed = 0.0;\n}\n",
+        "6": "// Buttongrass moorland model; parameters: 1. Temperature, 'temp', 2. Relative humidity, 'rel_hum', 3. Fuel age 'fire_history' (yrs)\n\nREAL fire_history = 2.0;\n\n// Get wind component in normal direction\nREAL wind_speed_2m = 0.666*wind_speed;\nREAL wdot = dot(normalize(advect_vector), advect_normal_vector);\n\n// Calculate length-to-breadth ratio (LBR) for grassland\nREAL LBR = 1.0;\nif (wind_speed < 5){\n    LBR = 1.0;\n} else {\n    LBR = 1.1*pow(wind_speed, 0.464);\n}\n\n// Convert temperature to dew point temperature\nREAL b = 18.678;\nREAL c = 257.14;\nREAL gamma = log(rel_hum/100.0)+(b*temp/(c+temp));\nREAL dew_temp = c*gamma/(b-gamma);\n\n// Determine coefficient for flank rank of spread, Rf = cf * Rh, using Andrew's LBR equations\nREAL cc = sqrt(1.0-pow(LBR, -2.0));\nREAL cb = (1.0-cc)/(1.0+cc);\nREAL a_LBR = 0.5*(cb+1.0);\nREAL cf = a_LBR/LBR;\n\n// Determine shape parameters from Jason's document\n// Note: here what we define as [f/g/h] would be [f/Rhead, g/Rhead, and h/Rhead] in Jason's equations\nREAL f = 0.5*(1.0+cb);\nREAL g = 0.5*(1.0-cb);\nREAL h = cf;\n\n// Now calculate a speed coefficient using normal flow formula in Jason's document\nREAL speed_fraction = (g*wdot+sqrt(h*h+(f*f-h*h)*wdot*wdot));\n\n// Calculate moisture\nREAL mc = exp(1.660+0.0214*rel_hum-0.0292*dew_temp);\n\n// Calculate speed\nREAL head_speed = 0.678*pow(wind_speed_2m, 1.312)*exp(-0.0243*mc)*(1-exp(-0.116*fire_history))*0.0166667;\n\nspeed = speed_fraction * head_speed;\n"
+    },
+    "updateModels": {},
+    "updateModelsCommonStart": "arrival_time = arrival;\narea = isValid_REAL(arrival_time) ? 1 : 0;\n real_time_speed = speed;\nREAL fuel_load = 20.0;\nreal_time_intensity = 18600*speed*fuel_load*0.1;\nmax_intensity = max(max_intensity, real_time_intensity);\n",
+    "rateOfSpreadModelsCommonStart": "",
+    "rateOfSpreadModelsCommonEnd": "// Calculate slope effect\nREAL slope_in_normal_dir = degrees(atan(dot(normal_vector, grad(elevation))));\nslope_in_normal_dir = min(max(slope_in_normal_dir,-20), 20);\nREAL slope_coeff = pow(2.0, 0.1*fabs(slope_in_normal_dir));\n\nif (slope_in_normal_dir >= 0)\n    speed *= slope_coeff;\nelse\n    speed *= slope_coeff/(2*slope_coeff-1.0);\n\n//_output = max(output, speed);",
+    "inputVectors": [
+        {
+            "name": "mask",
+            "projection": "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs",
+            "mapping": "distance",
+            "data": {
+                "features": [
+                    {
+                        "type": "Feature",
+                        "properties": {},
+                        "geometry": {
+                            "type": "Polygon",
+                            "coordinates": [
+                                [
+                                    [
+                                        144.31765139837058,
+                                        -37.41761282338087
+                                    ],
+                                    [
+                                        144.31889563488668,
+                                        -37.41531287103295
+                                    ],
+                                    [
+                                        144.3252676340145,
+                                        -37.41519975862239
+                                    ],
+                                    [
+                                        144.3287364146048,
+                                        -37.41761282338087
+                                    ],
+                                    [
+                                        144.3279069235941,
+                                        -37.418140681296787
+                                    ],
+                                    [
+                                        144.3245889595512,
+                                        -37.41633088272793
+                                    ],
+                                    [
+                                        144.31934808452889,
+                                        -37.41651940341219
+                                    ],
+                                    [
+                                        144.3188579307498,
+                                        -37.417311190286067
+                                    ],
+                                    [
+                                        144.31765139837058,
+                                        -37.41761282338087
+                                    ]
+                                ]
+                            ]
+                        }
+                    }
+                ],
+                "type": "FeatureCollection"
+            }
+        }
+    ]
+}
