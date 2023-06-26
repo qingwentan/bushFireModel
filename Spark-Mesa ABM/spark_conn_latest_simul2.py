@@ -45,7 +45,7 @@ def matrixExtend(mtx):
         r_m[i] = np.NaN
     for i in range(512):
         c_m[i] = np.NaN
-    while mtx.shape[0] < 512:t
+    while mtx.shape[0] < 512:
         mtx = np.row_stack((mtx, r_m))
     while mtx.shape[1] < 512:
         mtx = np.column_stack((mtx, c_m.T)) 
@@ -248,7 +248,8 @@ def sparkModel(cfgJson, comparisonFile=None):
             ax2 = axes[1]
             ax1.imshow(spark_model.get_output(name = "real_time_intensity").data,interpolation='none', origin='lower')
             ax2.imshow(spark_model.get_output(name = "max_intensity").data,interpolation='none', origin='lower')
-            ax3.imshow(spark_model.get_arrival().data, interpolation='none', origin='lower')
+            # comment this otherwise error
+            # ax3.imshow(spark_model.get_arrival().data, interpolation='none', origin='lower')
             plt.show()
 
 
