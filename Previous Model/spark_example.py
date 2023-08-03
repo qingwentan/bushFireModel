@@ -11,8 +11,8 @@ import numpy as np
 from geostack.raster import Raster
 from geostack.runner import runScript
 from SparkModel import SparkModel
-from spark_ABM import ForestFire
-
+# from spark_ABM import ForestFire
+import pandas as pd
 
 truck_strategy = 'Goes to the closest fire'
 width = 1000
@@ -25,22 +25,23 @@ placed_on_edges = False
 
 # Create Spark model
 spark_model = SparkModel()
-ABM_model = ForestFire(
-    height,
-    width,
-    truck_strategy,
-    num_firetruck,
-    vision,
-    max_speed,
-    steps_to_extinguishment,
-    placed_on_edges
-)
 
-trucks = [agent.pos for agent in ABM_model.schedule_FireTruck.agents]
-print(trucks)
+# ABM_model = ForestFire(
+#     height,
+#     width,
+#     truck_strategy,
+#     num_firetruck,
+#     vision,
+#     max_speed,
+#     steps_to_extinguishment,
+#     placed_on_edges
+# )
+
+#trucks = [agent.pos for agent in ABM_model.schedule_FireTruck.agents]
+#print(trucks)
 
 # Configure Spark model
-timeMultiple = 3600
+timeMultiple = 600
 projStr = "+proj=lcc +lat_1=-36 +lat_2=-38 +lat_0=-37 +lon_0=145 +x_0=2500000 +y_0=2500000 +ellps=GRS80"
 spark_model.configure(projection=projStr,
                       resolutionMeters=30.0,
@@ -144,17 +145,20 @@ while spark_model.run_model(timeMultiple):
     """, [barrier])
 
     # Output image
-    #plt.imshow(spark_model.get_arrival().data, interpolation='none', origin='lower')
-    #plt.show()
-    spark_result = spark_model.get_arrival().data
-    ABM_model.step_intensity(spark_result)
-    ABM_model.step()
-    trucks = [agent.pos for agent in ABM_model.schedule_FireTruck.agents]
-    print(trucks)
-    ABM_result = ABM_model.output_array()
-    #print(ABM_model.count_extinguished_fires(ABM_model))
-    plt.imshow(ABM_result, interpolation='none', origin='lower')
+    plt.imshow(spark_model.get_arrival().data, interpolation='none', origin='lower')
     plt.show()
+    spark_result = spark_model.get_arrival().data
+    final_result = pd.DataFrame(spark_result)
+    # final_result.to_csv("F_result.csv")
+
+    # ABM_model.step_intensity(spark_result)
+    # ABM_model.step()
+    # trucks = [agent.pos for agent in ABM_model.schedule_FireTruck.agents]
+    # print(trucks)
+    # ABM_result = ABM_model.output_array()
+    #print(ABM_model.count_extinguished_fires(ABM_model))
+    # plt.imshow(ABM_result, interpolation='none', origin='lower')
+    # plt.show()
     
     #plt.imshow(np.ma.masked_where(barrier.data == 0, barrier.data), interpolation='none', origin='lower')
     #print(spark_model.get_arrival().data[84][163])
