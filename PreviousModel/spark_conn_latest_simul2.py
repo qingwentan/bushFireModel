@@ -335,7 +335,7 @@ def sparkModel(cfgJson, comparisonFile=None):
         #                                               outFile=comparisonOutputFile,
         #                                               method='jaccard')
 
-            # Add to comparison set
+        # Add to comparison set
         #    comparison = {}
         #    comparison['Jaccard'] = { 'value': jaccard_score, 'worst': 0, 'best': 1 }
         #    results['comparison'] = comparison

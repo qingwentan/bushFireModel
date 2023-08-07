@@ -14,10 +14,10 @@ from SparkModel import SparkModel
 # from spark_ABM import ForestFire
 import pandas as pd
 
-truck_strategy = 'Goes to the closest fire'
+# truck_strategy = 'Goes to the closest fire'
 width = 1000
 height = 1000
-num_firetruck = 30
+# num_firetruck = 30
 vision = 100
 max_speed = 100
 steps_to_extinguishment = 2
@@ -41,7 +41,7 @@ spark_model = SparkModel()
 #print(trucks)
 
 # Configure Spark model
-timeMultiple = 600
+timeMultiple = 28800
 projStr = "+proj=lcc +lat_1=-36 +lat_2=-38 +lat_0=-37 +lon_0=145 +x_0=2500000 +y_0=2500000 +ellps=GRS80"
 spark_model.configure(projection=projStr,
                       resolutionMeters=30.0,
@@ -149,7 +149,7 @@ while spark_model.run_model(timeMultiple):
     plt.show()
     spark_result = spark_model.get_arrival().data
     final_result = pd.DataFrame(spark_result)
-    # final_result.to_csv("F_result.csv")
+    final_result.to_csv("F_result.csv")
 
     # ABM_model.step_intensity(spark_result)
     # ABM_model.step()

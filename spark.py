@@ -13,7 +13,7 @@ spark_model = SparkModel()
 
 
 # Configure Spark model
-timeMultiple = 28800
+timeMultiple = 600
 projStr = "+proj=lcc +lat_1=-36 +lat_2=-38 +lat_0=-37 +lon_0=145 +x_0=2500000 +y_0=2500000 +ellps=GRS80"
 spark_model.configure(projection=projStr,
                       resolutionMeters=30.0,
@@ -93,7 +93,7 @@ spark_model.set_series_input("""
     2020-01-01T16:00:00Z,270,30,30,10
     2020-01-01T20:00:00Z,270,30,25,10
     """)
-            
+
 # Initialise solver
 slover = spark_model.initialise_solver()
 
@@ -120,6 +120,9 @@ while spark_model.run_model(timeMultiple):
     plt.show()
     spark_result = spark_model.get_arrival().data
     output_result = pd.DataFrame(spark_result)
+    
+    # extinguish fire, modify the output result, and send it back to spark_model
+    # find the greatest fire cell/nearest fire cell, functions to extinguishes fire around that centre, ...
     output_result.to_csv("data/rawData/output_result.csv")
 
 
