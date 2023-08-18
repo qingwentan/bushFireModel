@@ -120,10 +120,19 @@ while spark_model.run_model(timeMultiple):
     plt.show()
     spark_result = spark_model.get_arrival().data
     output_result = pd.DataFrame(spark_result)
-    
-    # extinguish fire, modify the output result, and send it back to spark_model
-    # find the greatest fire cell/nearest fire cell, functions to extinguishes fire around that centre, ...
     output_result.to_csv("data/rawData/output_result.csv")
+    # extinguish fire, modify the output result, and send it back to spark_model
+    # 1. figure out how to get the modified result back to spark_model
+    # 2. write some extinguishing functions
+    # 3. allow user to input strategies/ number of trucks /...
+    # find the greatest fire cell/nearest fire cell, functions to extinguishes fire around that centre, ...
+
+    # make test modification to result and save as csv
+    output_result.at[0,0] = 200
+    output_result.to_csv("data/rawData/modified_result.csv")
+
+    # test get_arrival(write=True)
+    spark_model.get_arrival(outfile = "data/rawData/modified_result.json", write=True)
 
 
 

@@ -1,0 +1,64 @@
+language: python
+python:
+ - 3.7
+
+before_install:
+    - pip install mesa
+    - pip install ipynb
+    - pip install axelrod
+    - pip install ipython==6.2.1
+    - pip install jupyter_console==5.2.0
+    - pip install statsmodels
+    - pip install SALib
+    - pip install pycodestyle
+    - pip install autopep8
+    
+notifications:
+  email: false
+  slack:
+    - rooms:
+        - asian-pacedyodeling:KUcuh0LZlw6M6dOe96wR2DE0
+      on_success: never
+      on_failure: always
+      template:
+        - "Build <%{build_url}|#%{build_number}> (<%{compare_url}|%{commit}>) by %{author} failed in %{duration}"
+        - "Unfortunately, it did not work this time, keep up the good work and you will get there :muscle:"
+        - ":letter_y::letter_o::letter_u: :letter_c::letter_a::letter_n:  :letter_d::letter_o: :letter_t::letter_h::letter_i::letter_s::exclamation:"
+    - rooms:
+        - asian-pacedyodeling:KUcuh0LZlw6M6dOe96wR2DE0
+      on_success: always
+      on_failure: never
+      template:
+        - "Build <%{build_url}|#%{build_number}> (<%{compare_url}|%{commit}>) by %{author} the great worked in %{duration}"
+        - "Success, you successfully succeeded! :clap::clap::clap:"
+        - ":letter_g::letter_o::letter_o::letter_d:  :letter_j::letter_o::letter_b::grey_exclamation:"
+        - ":letter_y::letter_o::letter_u: :letter_a::letter_r::letter_e: :letter_a::letter_w::letter_e::letter_s::letter_o::letter_m::letter_e::grey_exclamation:"
+
+script:
+    - git remote rm origin
+    - git remote add origin https://hildobby:${GITHUB_TOKEN}@github.com/hildobby/fire-suppression-abm.git
+    # Run pep8 on all .py files in all subfolders
+    # We must ignore E402 module level import not at top of file
+    # because of use case sys.path.append('..'); import <module>
+    - num_errors_before=`find . -name \*.py -exec pycodestyle --max-line-length=120 --ignore=E402,W503 {} + | wc -l`
+    - echo $num_errors_before
+
+    - cd "$TRAVIS_BUILD_DIR"
+    - git config --global user.email "h.moulie@gmail.com"
+    # From https://help.github.com/articles/setting-your-username-in-git/:
+    # "Tip: You don't have to use your real name--any name works. Git 
+    # actually associates commits by email address; the username is only 
+    # used for identification. If you use your email address associated 
+    # with a GitHub account, we'll use your GitHub username, instead of 
+    # this name.
+    - git config --global user.name "Travis"
+    - git checkout $TRAVIS_BRANCH
+
+    - find . -name \*.py -exec autopep8 --max-line-length=120 --ignore=E402,W503 --recursive --aggressive --in-place {} +
+    - num_errors_after=`find . -name \*.py -exec pycodestyle --max-line-length=120 --ignore=E402,W503  {} + | wc -l`
+    - echo $num_errors_after
+
+    - cd "$TRAVIS_BUILD_DIR"
+
+    # List the remaining errors - these will have to be fixed manually
+    - find . -name \*.py -exec pycodestyle --max-line-length=120 --ignore=E402,W503 {} +
