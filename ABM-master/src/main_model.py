@@ -650,6 +650,7 @@ sparse_ratio = 0.2 # Ratio of sparse vegetations 0 - 1
 steps_to_extinguishment = 3 # Number of steps needed to extinguish a fire 1-6
 placed_on_edges = 1 # boolean indicating whether the firetrucks are placed randomly over the grid or equispaced on the rim
 
+
 fire = ForestFire(
     height,
     width,
@@ -666,9 +667,10 @@ fire = ForestFire(
     wind_dir,
     sparse_ratio,
     steps_to_extinguishment,
-    placed_on_edges
+    placed_on_edges,
 )
 print("Model Running...")
+
 fire.run_model()
 
 results = fire.dc.get_model_vars_dataframe()

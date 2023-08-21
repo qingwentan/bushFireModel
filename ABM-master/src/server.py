@@ -102,7 +102,7 @@ model_parameters = {
     'wind_strength': UserSettableParameter('slider', 'Wind strength', 10, 0, 80, 1),
     'wind_dir': UserSettableParameter('choice', 'Wind Direction', value=('\u2B07 South'),
                                       choices=["\u2B06  North", "\u2197 North/East", "\u27A1 East",
-                                               "\u2198 South/East", "\u2B07 North",
+                                               "\u2198 South/East", "\u2B07 South",
                                                "\u2199 South/West", "\u2B05 West",
                                                "\u2196 North/West"]),
     'random_fires': UserSettableParameter('checkbox', 'Spontaneous Fires (Temperature based)', value=False),
