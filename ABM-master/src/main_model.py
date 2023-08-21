@@ -631,7 +631,7 @@ class ForestFire(Model):
         return start_pos
 
 
-
+'''
 # To be used if you want to run the model without the visualiser:
 temperature = 20 # int 0-60
 truck_strategy = 'Goes to the closest fire' # 7 stratgies
@@ -684,3 +684,4 @@ agent_variable[1].to_csv("src/test_data/agent_firetruck.csv")
 #print(agent_variable[0])
 #print(agent_variable[1])
 
+'''
