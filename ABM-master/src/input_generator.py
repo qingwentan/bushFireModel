@@ -141,3 +141,6 @@ for strategy in truck_strategy:
         writer.writerow(keys)
         for combo in combinations:
             writer.writerow(combo)
+
+    # Remove the "truck_strategy" after writing the combinations for the current strategy
+    parameters.pop(4)
