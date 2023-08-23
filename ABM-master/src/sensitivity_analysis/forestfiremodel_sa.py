@@ -50,7 +50,8 @@ class ForestFire(Model):
             break_width=0,
             sparse_ratio=0.5,
             steps_to_extinguishment=1,
-            random_seed = 0):
+            #random_seed = 0
+            ):
         super().__init__()
         '''
         Create a new forest fire model.
@@ -100,13 +101,13 @@ class ForestFire(Model):
 
         self.grid = MultiGrid(height, width, torus=False)
 
-        random.seed(random_seed)
+        #random.seed(random_seed)
         self.init_river()
         self.init_break(self.break_size)
 
         # agent_reporters={TreeCell: {"Life bar": "life_bar"}})
 
-        random.seed(random_seed)
+        #random.seed(random_seed)
         self.init_vegetation(TreeCell, self.initial_tree)
 
         for i in range(len(self.agents)):
@@ -131,7 +132,7 @@ class ForestFire(Model):
         self.truck_strategy = truck_strategy
         self.wind_strength = wind_strength
 
-        random.seed(random_seed)
+        #random.seed(random_seed)
         self.init_firefighters(Firetruck, num_firetruck, truck_strategy, vision, truck_max_speed)
         # self.init_rain()
 

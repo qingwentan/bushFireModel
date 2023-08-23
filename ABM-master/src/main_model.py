@@ -63,8 +63,20 @@ class ForestFire(Model):
             wind_dir,
             sparse_ratio,
             steps_to_extinguishment,
-            placed_on_edges):
+            placed_on_edges,
+            #seed
+            ):
         super().__init__()
+
+        '''
+        # modification to set seed initially
+        self.seed = seed
+        if self.seed is None:
+            self.seed = random.randrange(sys.maxsize)
+
+        super().__init__(seed=self.seed)
+        random.seed(self.seed)
+        '''
 
         # Initializing model parameters
         self.height = height
@@ -171,6 +183,7 @@ class ForestFire(Model):
         '''
         Creating a river
         '''
+
         if self.river_width == 0:
             pass
         else:
@@ -209,6 +222,7 @@ class ForestFire(Model):
         '''
         Creating a Firebreak (no fuel to burn on the designated area)
         '''
+
         if self.break_width == 0:
             pass
         else:
@@ -243,6 +257,7 @@ class ForestFire(Model):
         '''
         Creating trees
         '''
+
         x = random.randrange(self.width)
         y = random.randrange(self.height)
 
@@ -322,6 +337,7 @@ class ForestFire(Model):
         '''
         Creating rain
         '''
+
         x = random.randrange(self.width)
         y = random.randrange(self.height)
         self.new_agent(Rain, (x, y))
@@ -380,6 +396,7 @@ class ForestFire(Model):
         '''
         Possibly ignites a new fire, chance depending on the temperature
         '''
+
         if (random.random() < (math.exp(self.temperature / 15) / 300.0)):
             self.agents[randtree].condition = "On Fire"
 
@@ -649,7 +666,7 @@ max_speed = 30 # speed of firetrucks 1-30
 sparse_ratio = 0.2 # Ratio of sparse vegetations 0 - 1
 steps_to_extinguishment = 3 # Number of steps needed to extinguish a fire 1-6
 placed_on_edges = 1 # boolean indicating whether the firetrucks are placed randomly over the grid or equispaced on the rim
-
+seed = 1
 
 fire = ForestFire(
     height,
@@ -668,17 +685,19 @@ fire = ForestFire(
     sparse_ratio,
     steps_to_extinguishment,
     placed_on_edges,
+    #seed
 )
 print("Model Running...")
 
 fire.run_model()
 
 results = fire.dc.get_model_vars_dataframe()
-results.to_csv("src/test_data/model_result.csv")
+results.to_csv("src/test_data/model_result1.csv")
 
 agent_variable = fire.dc.get_agent_vars_dataframe()
-agent_variable[0].to_csv("src/test_data/agent_treeCell.csv")
-agent_variable[1].to_csv("src/test_data/agent_firetruck.csv")
+agent_variable[0].to_csv("src/test_data/agent_treeCell1.csv")
+agent_variable[1].to_csv("src/test_data/agent_firetruck1.csv")
+
 
 #results_firetrucks = fire.dc.get_model_vars_dataframe()
 #print(agent_variable[0])
