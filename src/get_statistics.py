@@ -59,7 +59,7 @@ def create_folder(path):
 # the content under the zip folder- "raw" folder - should be placed under data/test/.
 # so the directory looks like "data/test/raw"
 # and the output statistic will be saved in "data/test/curated"
-base_path = "data/output/raw"
+base_path = "data/test/raw"
 strategies = [dir_name for dir_name in os.listdir(base_path) if os.path.isdir(os.path.join(base_path, dir_name))]
 print(strategies)
 for strategy in strategies:
@@ -72,6 +72,45 @@ for strategy in strategies:
             model_result = pd.read_csv(model_result_path)
             print(model_result)
             # Do whatever you need with the file
+            # Count the rows in the DataFrame
+            total_rows = model_result.shape[0]
+            number_of_steps = total_rows
+            print(f"Number of steps in {model_result_path}: {number_of_steps}")
+            # Extract and print the value of "Extinguished" column from the last row
+            last_extinguished_value = model_result["Extinguished"].iloc[-1]
+            print(f"Value of 'Extinguished' in last row: {last_extinguished_value}")
+            # Extract and print the value of 'Burned Out' column from the last row
+            last_burned_out_value = model_result["Burned Out"].iloc[-1]
+            print(f"Value of 'Burned Out' in last row: {last_burned_out_value}")
+             # Extract and print the value of Number of cells that were on fire
+            fine_value = model_result["Fine"].iloc[-1]
+            onFire=8000-fine_value
+            print(f"Number of cells that were on fire: {onFire}")
+             # Initialize lists to store max absolute differences above and below
+            max_abs_diff_above = []
+            max_abs_diff_below = []
+            # Find the index of the row with the maximum 'On Fire' value
+            max_on_fire_index = model_result["On Fire"].idxmax()
+       
+            # Calculate absolute differences above the maximum 'On Fire' row
+            abs_diff_above = model_result.loc[:max_on_fire_index, "On Fire"].diff().abs()
+            abs_diff_above = abs_diff_above.fillna(0)  # Replace nan with 0
+            if not abs_diff_above.empty:  # Check if any valid values are present
+                max_abs_diff_above.append(abs_diff_above.max())
+            
+            # Calculate absolute differences below the maximum 'On Fire' row
+            abs_diff_below = model_result.loc[max_on_fire_index:, "On Fire"].diff().abs()
+            abs_diff_below = abs_diff_below.fillna(0)  # Replace nan with 0
+            if not abs_diff_below.empty:
+                max_abs_diff_below.extend(abs_diff_below.tolist())  # Extend the list
+
+            # Find and print the overall maximum absolute differences
+            maximum_growthrate_firecell = max(max_abs_diff_above) if max_abs_diff_above else 0
+            maximum_extinguishedrate_firecell = max(max_abs_diff_below) if max_abs_diff_below else 0
+            minimum_extinguishedrate_firecell= min(max_abs_diff_below) if max_abs_diff_below else 0
+            print(f"Overall maximum absolute difference above: {maximum_growthrate_firecell}")
+            print(f"Overall maximum absolute difference below: {maximum_extinguishedrate_firecell}")
+            print(f"Overall minimum absolute difference below: {minimum_extinguishedrate_firecell}")
 
         if os.path.exists(treeCell_path):
             treeCell = pd.read_csv(treeCell_path)
