@@ -62,6 +62,8 @@ def create_folder(path):
 base_path = "data/test/raw"
 strategies = [dir_name for dir_name in os.listdir(base_path) if os.path.isdir(os.path.join(base_path, dir_name))]
 print(strategies)
+# Initialize an empty list to store dictionaries with statistics values
+statistics_data = []
 for strategy in strategies:
     strategy_path = os.path.join(base_path, strategy)
     sim_dirs = [sim_dir for sim_dir in os.listdir(strategy_path) if os.path.isdir(os.path.join(strategy_path, sim_dir)) and "sim_" in sim_dir]
@@ -75,54 +77,94 @@ for strategy in strategies:
             # Count the rows in the DataFrame
             total_rows = model_result.shape[0]
             number_of_steps = total_rows
-            print(f"Number of steps in {model_result_path}: {number_of_steps}")
+            #print(f"Number of steps in {model_result_path}: {number_of_steps}")
             # Extract and print the value of "Extinguished" column from the last row
             last_extinguished_value = model_result["Extinguished"].iloc[-1]
-            print(f"Value of 'Extinguished' in last row: {last_extinguished_value}")
+            #print(f"Value of 'Extinguished' in last row: {last_extinguished_value}")
             # Extract and print the value of 'Burned Out' column from the last row
             last_burned_out_value = model_result["Burned Out"].iloc[-1]
-            print(f"Value of 'Burned Out' in last row: {last_burned_out_value}")
+            #print(f"Value of 'Burned Out' in last row: {last_burned_out_value}")
              # Extract and print the value of Number of cells that were on fire
             fine_value = model_result["Fine"].iloc[-1]
             onFire=8000-fine_value
-            print(f"Number of cells that were on fire: {onFire}")
+            #print(f"Number of cells that were on fire: {onFire}")
              # Initialize lists to store max absolute differences above and below
             max_abs_diff_above = []
             max_abs_diff_below = []
             # Find the index of the row with the maximum 'On Fire' value
             max_on_fire_index = model_result["On Fire"].idxmax()
        
-            # Calculate absolute differences above the maximum 'On Fire' row
-            abs_diff_above = model_result.loc[:max_on_fire_index, "On Fire"].diff().abs()
-            abs_diff_above = abs_diff_above.fillna(0)  # Replace nan with 0
-            if not abs_diff_above.empty:  # Check if any valid values are present
-                max_abs_diff_above.append(abs_diff_above.max())
+            # Initialize maximum fire rate to zero
+            max_fire_rate = 0
+            # Initialize a list to store fire rates
+            fire_rates = []
+            # Iterate through the DataFrame starting from the second row
+            for i in range(1, len(model_result)):
+                fire_rate = (model_result.loc[i , 'On Fire'] + model_result.loc[i , 'Extinguished']) - (model_result.loc[i-1, 'Extinguished'] + model_result.loc[i-1, 'On Fire'])
+                fire_rates.append(fire_rate)
+                # Find the maximum fire rate from the list
+                max_fire_rate = max(fire_rates)
+
+            #print("Maximum Fire Rate per Cell:", max_fire_rate)
             
-            # Calculate absolute differences below the maximum 'On Fire' row
-            abs_diff_below = model_result.loc[max_on_fire_index:, "On Fire"].diff().abs()
-            abs_diff_below = abs_diff_below.fillna(0)  # Replace nan with 0
-            if not abs_diff_below.empty:
-                max_abs_diff_below.extend(abs_diff_below.tolist())  # Extend the list
+            # Calculate absolute differences for the Extinguished firecell perstep
+
+            extinguish_firecell_perstep = model_result['Extinguished'].diff().abs().max()
+            #print("Extinguish Rate:", extinguish_firecell_perstep)
 
             # Find and print the overall maximum absolute differences
             maximum_growthrate_firecell = max(max_abs_diff_above) if max_abs_diff_above else 0
-            maximum_extinguishedrate_firecell = max(max_abs_diff_below) if max_abs_diff_below else 0
-            minimum_extinguishedrate_firecell= min(max_abs_diff_below) if max_abs_diff_below else 0
-            print(f"Overall maximum absolute difference above: {maximum_growthrate_firecell}")
-            print(f"Overall maximum absolute difference below: {maximum_extinguishedrate_firecell}")
-            print(f"Overall minimum absolute difference below: {minimum_extinguishedrate_firecell}")
+            
+            #print(f"Overall maximum absolute difference above: {maximum_growthrate_firecell}")
+           
 
         if os.path.exists(treeCell_path):
             treeCell = pd.read_csv(treeCell_path)
-            # print(treeCell)
+
+            #print(treeCell)
             # Do whatever you need with the file
+            # Get the last 8000 rows
+            last_8000_rows = treeCell.tail(8000)
+            # Count rows where "Life bar" is not 100
+            count_non_100 = last_8000_rows[last_8000_rows["Life bar"] != 100].shape[0]
+            count_healthy_trees= 8000*0.8-(count_non_100)
+            count_nonhealthy_trees= count_non_100
+            #print("Number of healthy trees:", count_healthy_trees)
+            #print("Number of unhealthy trees:", count_nonhealthy_trees)
+
+            # Calculate the percentage of damaged tree
+            percentage_damaged = (count_non_100 / 8000) * 100
+
+            #print("Percentage of damaged trees:", percentage_damaged)
 
 
-    create_folder("data/test/curated")
-    output_path = os.path.join("data/test/curated", strategy)
-    print(output_path)
-    # create directory of the output file 
-    create_folder(output_path)
+        create_folder("data/test/curated")
+        output_path = os.path.join("data/test/curated", strategy)
+        print(output_path)
+        # create directory of the output file 
+        create_folder(output_path)
+        # Create the output directory for the current simulation
+        #output_sim_dir = os.path.join(output_path, sim_dir)
+        #create_folder(output_sim_dir)
+    
+        # "statistics" will be the name of final dataframe which has 10 columns and 1000 rows.
+        statistics_data.append({"Number_of_steps_to_ExtinguishFire": number_of_steps,
+            "Number_of_extinguished_firecell": last_extinguished_value,
+            "Number_of_burned_out_cell": last_burned_out_value,
+            "Number_of_cells_on_fire": onFire,
+            "Maximum_growthrate_firecell_perstep": max_fire_rate,
+            "Maximum_extinguishedrate_firecell_perstep": extinguish_firecell_perstep,
+            #"Minimum_extinguishedrate_firecell_perstep": minimum_extinguishedrate_firecell,
+            "Count_healthy_trees": count_healthy_trees,
+            "Count_unhealthy_trees": count_nonhealthy_trees,
+            "Percentage_damaged_burnedtrees": percentage_damaged
+        })
+        # Create the statistics DataFrame from the list of dictionaries
+        statistics = pd.DataFrame(statistics_data)
 
-    # "statistics" will be the name of final dataframe which has 12 columns and 1000 rows.
-    # statistics.to_csv(output_path)
+        # Create the output file path for the current simulation
+        output_file = os.path.join(output_path, "statistics.csv")
+
+        # Save the statistics DataFrame to the output file
+        statistics.to_csv(output_file, index=False)
+       
