@@ -62,9 +62,10 @@ def create_folder(path):
 base_path = "data/test/raw"
 strategies = [dir_name for dir_name in os.listdir(base_path) if os.path.isdir(os.path.join(base_path, dir_name))]
 print(strategies)
-# Initialize an empty list to store dictionaries with statistics values
-statistics_data = []
+
 for strategy in strategies:
+    # Initialize an empty list to store dictionaries with statistics values
+    statistics_data = []
     strategy_path = os.path.join(base_path, strategy)
     sim_dirs = [sim_dir for sim_dir in os.listdir(strategy_path) if os.path.isdir(os.path.join(strategy_path, sim_dir)) and "sim_" in sim_dir]
     for sim_dir in sim_dirs:
@@ -72,7 +73,7 @@ for strategy in strategies:
         treeCell_path = os.path.join(strategy_path, sim_dir, "agent_treeCell.csv")
         if os.path.exists(model_result_path):
             model_result = pd.read_csv(model_result_path)
-            print(model_result)
+            #print(model_result)
             # Do whatever you need with the file
             # Count the rows in the DataFrame
             total_rows = model_result.shape[0]
@@ -147,7 +148,7 @@ for strategy in strategies:
         #output_sim_dir = os.path.join(output_path, sim_dir)
         #create_folder(output_sim_dir)
     
-        # "statistics" will be the name of final dataframe which has 10 columns and 1000 rows.
+        # "statistics" will be the name of final dataframe which has 9 columns and 1000 rows.
         statistics_data.append({"Number_of_steps_to_ExtinguishFire": number_of_steps,
             "Number_of_extinguished_firecell": last_extinguished_value,
             "Number_of_burned_out_cell": last_burned_out_value,
