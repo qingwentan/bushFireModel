@@ -128,13 +128,13 @@ for strategy in strategies:
             last_8000_rows = treeCell.tail(8000)
             # Count rows where "Life bar" is not 100
             count_non_100 = last_8000_rows[last_8000_rows["Life bar"] != 100].shape[0]
-            count_healthy_trees= 8000*0.8-(count_non_100)
+            count_healthy_trees= 8000 - count_non_100
             count_nonhealthy_trees= count_non_100
             #print("Number of healthy trees:", count_healthy_trees)
             #print("Number of unhealthy trees:", count_nonhealthy_trees)
 
             # Calculate the percentage of damaged tree
-            percentage_damaged = (count_non_100 / 8000) * 100
+            percentage_damaged = (count_non_100 / 8000) 
 
             #print("Percentage of damaged trees:", percentage_damaged)
 
@@ -149,15 +149,19 @@ for strategy in strategies:
         #create_folder(output_sim_dir)
     
         # "statistics" will be the name of final dataframe which has 9 columns and 1000 rows.
-        statistics_data.append({"Number_of_steps_to_ExtinguishFire": number_of_steps,
-            "Number_of_extinguished_firecell": last_extinguished_value,
-            "Number_of_burned_out_cell": last_burned_out_value,
-            "Number_of_cells_on_fire": onFire,
+        statistics_data.append({
+            "Number_of_steps_to_ExtinguishFire": number_of_steps,
+            "Percentage_of_extinguished_firecell": last_extinguished_value/10000,
+            #"Number_of_extinguished_firecell": last_extinguished_value,
+            #"Number_of_burned_out_cell": last_burned_out_value,
+            "Percentage_of_burned_out_cell": last_burned_out_value/10000,
+            #"Number_of_cells_on_fire": onFire,
+            "Percentage_of_cells_on_fire": onFire/10000,
             "Maximum_growthrate_firecell_perstep": max_fire_rate,
             "Maximum_extinguishedrate_firecell_perstep": extinguish_firecell_perstep,
             #"Minimum_extinguishedrate_firecell_perstep": minimum_extinguishedrate_firecell,
-            "Count_healthy_trees": count_healthy_trees,
-            "Count_unhealthy_trees": count_nonhealthy_trees,
+            #"Count_healthy_trees": count_healthy_trees,
+            #"Count_unhealthy_trees": count_nonhealthy_trees,
             "Percentage_damaged_burnedtrees": percentage_damaged
         })
         # Create the statistics DataFrame from the list of dictionaries
