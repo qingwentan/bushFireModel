@@ -134,7 +134,7 @@ for strategy in strategies:
             #print("Number of unhealthy trees:", count_nonhealthy_trees)
 
             # Calculate the percentage of damaged tree
-            percentage_damaged = (count_non_100 / 8000) * 100
+            percentage_damaged = count_non_100 / 8000
 
             #print("Percentage of damaged trees:", percentage_damaged)
 
@@ -151,8 +151,11 @@ for strategy in strategies:
         # "statistics" will be the name of final dataframe which has 9 columns and 1000 rows.
         statistics_data.append({"Number_of_steps_to_ExtinguishFire": number_of_steps,
             "Number_of_extinguished_firecell": last_extinguished_value,
+            #"Percentage_of_extinguished_firecell": last_extinguished_value/8000,
             "Number_of_burned_out_cell": last_burned_out_value,
+            #"Percentage_of_burned_out_cell": last_burned_out_value/8000,
             "Number_of_cells_on_fire": onFire,
+            #"Percentage_of_cells_on_fire": onFire/8000,
             "Maximum_growthrate_firecell_perstep": max_fire_rate,
             "Maximum_extinguishedrate_firecell_perstep": extinguish_firecell_perstep,
             #"Minimum_extinguishedrate_firecell_perstep": minimum_extinguishedrate_firecell,
