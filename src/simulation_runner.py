@@ -1,6 +1,6 @@
 '''
 Forest Fire Simulation Runner
-Author: Ying Zhu, Aanchal
+Author: Ying Zhu
 Date: August 21, 2023
 
 This script is designed to simulate forest fires using a set of parameters from an input CSV file. The main functionalities include:
@@ -27,19 +27,37 @@ from main_model import ForestFire
 
 
 def create_folder(path):
-    """Create a folder at the specified path if not exist."""
+    """
+        Create a folder at the specified path if not exist.
+        message can be abled by uncommenting printing
+    """
     try:
         os.makedirs(path)
-        print(f"Folder created at {path}")
+        # print(f"Folder created at {path}")
     except FileExistsError:
-        print(f"Folder already exists at {path}")
+        # print(f"Folder already exists at {path}")
+        pass
     except Exception as e:
         print(f"Error creating folder: {e}")
+
+
+def simplify_wind_dir(value):
+    """ 
+    Simplify the 'wind_dir' value for more concise folder naming.
+    This function maps verbose wind direction descriptions to their corresponding abbreviations.
+    """
+    replacements = {
+        "\u2197 North/East": "NE",
+        "\u2198 South/East": "SE",
+        "\u2199 South/West": "SW",
+        "\u2196 North/West": "NW"
+    }
+    return replacements.get(value, value)
 
 # Start the timer
 start_time = time.time()
 
-# Check if the CSV path is provided
+# Check if the input CSV path is provided
 if len(sys.argv) < 2:
     print("Please provide the path to the input CSV file.")
     sys.exit()
@@ -47,16 +65,24 @@ if len(sys.argv) < 2:
 # get the input csv path
 input_path = sys.argv[1]
 
+# Set the number of replications for a given scenario.
+# Based on project time constraints, 11 replications have been set as the limit.
+# With this number, most outcome parameters achieve a 95% confidence rate within a 0.1 margin of error.
+# TODO: Detailed explaination can be found in "qingwen's ipynb"
+replicationN = 11
 
-# Open the CSV file and read row by row
+
+# Open the CSV file and count the number of rows
+# that is the number of different senarios for 1 strategy
+with open(input_path, 'r') as file:
+    num_rows = sum(1 for line in file) - 1
+
+# Open the CSV file, start simulations
 with open(input_path, 'r') as file:
     # Create a DictReader object
     csv_reader = csv.DictReader(file)
-    # index of current simulation
-    count = 0 
-    for row in csv_reader:
-        # update index
-        count += 1
+
+    for index, row in enumerate(csv_reader, start=1):
         # get parameters
         height = int(row['height'])
         width = int(row['width'])
@@ -74,46 +100,51 @@ with open(input_path, 'r') as file:
         sparse_ratio = float(row['sparse_ratio'])
         steps_to_extinguishment = int(row['steps_to_extinguishment'])
         placed_on_edges = int(row['placed_on_edges'])
-        # random_seed =?
         
-        # initialise the fire model
-        fire = ForestFire(
-                height,
-                width,
-                density,
-                temperature,
-                truck_strategy,
-                river_width, 
-                break_width, 
-                random_fires,
-                num_firetruck,
-                vision,
-                max_speed,
-                wind_strength,
-                wind_dir,
-                sparse_ratio,
-                steps_to_extinguishment,
-                placed_on_edges,
-        )
+        # folder name with input parameters, used for saving results
+        folder_name = f"break{break_width}_nTrucks{num_firetruck}_speed{max_speed}_windDir_{simplify_wind_dir(wind_dir)}_steps{steps_to_extinguishment}_edges{placed_on_edges}"
 
-        print(f"Simulation {count} Running...")
+        # iterating 'replicationN' times for each row/senario
+        for i in range(replicationN):
+            # initialise the fire model
+            fire = ForestFire(
+                    height,
+                    width,
+                    density,
+                    temperature,
+                    truck_strategy,
+                    river_width, 
+                    break_width, 
+                    random_fires,
+                    num_firetruck,
+                    vision,
+                    max_speed,
+                    wind_strength,
+                    wind_dir,
+                    sparse_ratio,
+                    steps_to_extinguishment,
+                    placed_on_edges,
+            )
+            this_folder_name = folder_name + (f'_rep{i+1}')
 
-        fire.run_model()
+            # print process to log
+            print(f"Processing simulation {index}/{num_rows}, replication {i+1}/{replicationN} ...")
 
-        # create directory of the output file 
-        create_folder(f'data/output/raw/{truck_strategy}/sim_{count}/')
+            fire.run_model()
 
-        # save the input parameters
-        input = pd.DataFrame([row])
-        input.to_csv(f"data/output/raw/{truck_strategy}/sim_{count}/input.csv", index=False)
+            # create directory of the output file 
+            create_folder(f'data/output/raw/{truck_strategy}/{this_folder_name}/')
 
-        # save model outputs
-        results = fire.dc.get_model_vars_dataframe()
-        results.to_csv(f"data/output/raw/{truck_strategy}/sim_{count}/model_result.csv", index=False)
+            # save the input parameters
+            input = pd.DataFrame([row])
+            input.to_csv(f"data/output/raw/{truck_strategy}/{this_folder_name}/input.csv", index=False)
 
-        agent_variable = fire.dc.get_agent_vars_dataframe()
-        agent_variable[0].to_csv(f"data/output/raw/{truck_strategy}/sim_{count}/agent_treeCell.csv")
-        agent_variable[1].to_csv(f"data/output/raw/{truck_strategy}/sim_{count}/agent_firetruck.csv")
+            # save model outputs
+            results = fire.dc.get_model_vars_dataframe()
+            results.to_csv(f"data/output/raw/{truck_strategy}/{this_folder_name}/model_result.csv", index=False)
+            agent_variable = fire.dc.get_agent_vars_dataframe()
+            agent_variable[0].to_csv(f"data/output/raw/{truck_strategy}/{this_folder_name}/agent_treeCell.csv")
+            agent_variable[1].to_csv(f"data/output/raw/{truck_strategy}/{this_folder_name}/agent_firetruck.csv")
 
 
 # End the timer
@@ -122,4 +153,8 @@ print("ALL DONE!")
 
 # Calculate the elapsed time
 elapsed_time = end_time - start_time
-print(f"The simulation took {elapsed_time} seconds to run.")
+# Get the whole number of hours
+hours = elapsed_time // 3600
+# Get the remainder when divided by 3600 and then determine the number of minutes
+minutes = (elapsed_time % 3600) // 60
+print(f"Elapsed time: {hours} hours and {minutes} minutes")

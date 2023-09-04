@@ -388,7 +388,7 @@ class ForestFire(Model):
 
         # Halt if no more fire
         if self.count_type(self, "On Fire") == 0:
-            print(" \n \n Fire is gone ! \n \n")
+            # print(" \n \n Fire is gone ! \n \n")
             self.running = False
 
     @staticmethod
@@ -648,7 +648,7 @@ class ForestFire(Model):
         return start_pos
 
 
-
+"""
 # To be used if you want to run the model without the visualiser:
 temperature = 20 # int 0-60
 truck_strategy = 'Goes to the closest fire' # 7 stratgies
@@ -687,7 +687,7 @@ fire = ForestFire(
     placed_on_edges,
     #seed
 )
-print("Model Running...")
+# print("Model Running...")
 
 fire.run_model()
 
@@ -697,9 +697,9 @@ results.to_csv("src/test_data/model_result1.csv")
 agent_variable = fire.dc.get_agent_vars_dataframe()
 agent_variable[0].to_csv("src/test_data/agent_treeCell1.csv")
 agent_variable[1].to_csv("src/test_data/agent_firetruck1.csv")
-print(fire.random.seed)
+
 
 #results_firetrucks = fire.dc.get_model_vars_dataframe()
 #print(agent_variable[0])
 #print(agent_variable[1])
-
+"""

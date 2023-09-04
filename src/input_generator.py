@@ -55,8 +55,8 @@ truck_strategy = ['Goes to the closest fire', 'Goes to the biggest fire', 'Rando
 
 # river_width and break_width are both set to [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 # river size will not exceed 200 meters if the map is 1000 meters if river exists. 
-# 0, 2 
-river_width = [0,2]
+# 0, 2 less important so disabled
+river_width = [0]
 
 # A firebreak or double track is a gap in vegetation or other combustible material that acts as a barrier to (slow or) stop the progress of a bushfire or wildfire.
 # so no fire will be grow in this width
@@ -79,7 +79,8 @@ max_speed = [i for i in range(15, 31, 5)]
 
 # wind_strength is set to [0, 10, 20, 30, 40, 50, 60, 70, 80]
 # low 20, medium 50, high 80
-wind_strength = [20,50,80]
+# for amb-extinguished model, we takes wind strength out, but in practice, it is influential to fire spread
+wind_strength = [20]
 
 # the effect of wind direction really depends on terrain. north-west, south-east, pick,4, perpendicular to each other 
 wind_dir = ["\u2197 North/East", "\u2198 South/East", "\u2199 South/West", "\u2196 North/West"]
