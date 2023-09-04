@@ -13,8 +13,9 @@ Usage:
 python <path_to_simulation_runner> <path_to_input_csv>
 (Note. Input CSV file path has multiple space so "" are requried.)
 
-Example:
+Examples:
 python src/simulation_runner.py "data/input/strategy_Goes to the biggest fire.csv"
+python src/simulation_runner.py "data/input/strategy_Indirect attack.csv"
 '''
 
 
@@ -83,6 +84,9 @@ with open(input_path, 'r') as file:
     csv_reader = csv.DictReader(file)
 
     for index, row in enumerate(csv_reader, start=1):
+        # print process to log
+        print(f"Processing simulation {index}/{num_rows}...")
+        
         # get parameters
         height = int(row['height'])
         width = int(row['width'])
@@ -126,9 +130,6 @@ with open(input_path, 'r') as file:
                     placed_on_edges,
             )
             this_folder_name = folder_name + (f'_rep{i+1}')
-
-            # print process to log
-            print(f"Processing simulation {index}/{num_rows}, replication {i+1}/{replicationN} ...")
 
             fire.run_model()
 
