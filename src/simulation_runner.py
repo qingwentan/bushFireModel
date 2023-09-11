@@ -18,6 +18,7 @@ python src/simulation_runner.py "data/input/strategy_Goes to the biggest fire.cs
 python src/simulation_runner.py "data/input/strategy_Indirect attack.csv"
 python src/simulation_runner.py "data/input/strategy_Optimized closest.csv"
 python src/simulation_runner.py "data/input/strategy_Parallel attack.csv"
+python src/simulation_runner.py "data/input/strategy_Random movements.csv"
 '''
 
 
@@ -77,11 +78,11 @@ replicationN = 11
 
 # Open the CSV file and count the number of rows
 # that is the number of different senarios for 1 strategy
-with open(input_path, 'r') as file:
+with open(input_path, 'r', encoding='utf-8') as file:
     num_rows = sum(1 for line in file) - 1
 
 # Open the CSV file, start simulations
-with open(input_path, 'r') as file:
+with open(input_path, 'r', encoding='utf-8') as file:
     # Create a DictReader object
     csv_reader = csv.DictReader(file)
 
