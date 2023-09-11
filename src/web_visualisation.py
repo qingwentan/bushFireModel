@@ -23,10 +23,12 @@ from dash.dependencies import Input, Output
 
 # Load all CSVs into a dictionary based on their strategy name
 strategy_files = {
-    "Parallel Attack": "data/output/curated/Parallel attack_result.csv",
     "Goes to the Closest Fire": "data/output/curated/Goes to the closest fire_result.csv",
     "Goes to the Biggest Fire": "data/output/curated/Goes to the biggest fire_result.csv",
-    #"Indirect Attack": "data/output/curated/Indirect attack.csv",
+    "Parallel Attack": "data/output/curated/Parallel attack_result.csv",
+    "Optimized Parallel Attack": "data/output/curated/Optimized Parallel attack_result.csv",
+    "Random Movements": "data/output/curated/Random movements_result.csv",
+    #"Indirect Attack": "data/output/curated/Indirect attack_result.csv",
     # Add other strategies here...
 }
 
