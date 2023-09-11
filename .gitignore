@@ -6,6 +6,8 @@ src/.DS_Store
 *.pyc
 .history/
 .vs/
+*.pyc
+.env
 .DS_Store
 data/output/raw
 data/test/raw

@@ -53,6 +53,7 @@ outputs = ["Number_of_steps_to_ExtinguishFire", "Number_of_extinguished_firecell
                   "Count_healthy_trees", "Count_unhealthy_trees", "Percentage_damaged_burnedtrees"]
 
 app = dash.Dash(__name__)
+server = app.server
 app.title = "Bushfire Visualiser"
 
 
