@@ -5,7 +5,7 @@ src/.DS_Store
 *__pycache__
 *.pyc
 .history/
-.vs
+.vs/
 .DS_Store
 data/output/raw
 data/test/raw

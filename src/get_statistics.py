@@ -197,7 +197,7 @@ result = result.groupby(input_columns)[output_columns].mean().reset_index()
 
 # Rename 'steps_to_extinguishment' for input paramters to 'steps_to_extinguish_1_cell'
 # to avoid confusion with the "Number_of_steps_to_ExtinguishFire" in the output
-df = result.rename(columns={'steps_to_extinguishment': 'steps_to_extinguish_1_cell'})
+result = result.rename(columns={'steps_to_extinguishment': 'steps_to_extinguish_1_cell'})
 
 # create directory of the output file 
 create_folder("data/output/curated")
