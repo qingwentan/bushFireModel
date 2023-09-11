@@ -108,8 +108,20 @@ app.layout = html.Div([
      Input('output-dropdown', 'value')]
 )
 
+
 # a function to update the graph when any dropdown selection is changed
 def update_graph(selected_strategy, selected_input, selected_output):
+
+    # Check if any of the dropdown values is None
+    if not selected_input or not selected_output or not selected_strategy:
+        # render an empty figure and text reminder to select features
+        return {
+            'data': [],
+            'layout': {
+                'title': 'Select strategy, input and output to view visualisation.'
+            }
+        }
+    
     # Select the appropriate dataframe from the dictionary
     filtered_data = data_dict[selected_strategy]
     # draw fig
