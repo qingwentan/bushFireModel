@@ -9,7 +9,7 @@ Author:  Ying Zhu
 Last Edited:  11 Sep, 2023
 Usage:
     1. Install the necessary packages if haven't install:
-        'pip install dash dash-core-components dash-html-components pandas'
+        'pip install dash plotly'
     2. Run the command: 'python <path_to_web_visualisation.py>'
         Example: 'python src/web_visualisation.py'
 """
