@@ -16,6 +16,9 @@ python <path_to_simulation_runner> <path_to_input_csv>
 Examples:
 python src/simulation_runner.py "data/input/strategy_Goes to the biggest fire.csv"
 python src/simulation_runner.py "data/input/strategy_Indirect attack.csv"
+python src/simulation_runner.py "data/input/strategy_Optimized closest.csv"
+python src/simulation_runner.py "data/input/strategy_Parallel attack.csv"
+python src/simulation_runner.py "data/input/strategy_Random movements.csv"
 '''
 
 
@@ -86,7 +89,7 @@ with open(input_path, 'r', encoding='utf-8') as file:
     for index, row in enumerate(csv_reader, start=1):
         # print process to log
         print(f"Processing simulation {index}/{num_rows}...")
-        
+
         # get parameters
         height = int(row['height'])
         width = int(row['width'])
