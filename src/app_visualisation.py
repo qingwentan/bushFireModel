@@ -28,7 +28,7 @@ strategy_files = {
     "Parallel Attack": "data/output/curated/Parallel attack_result.csv",
     "Optimized Parallel Attack": "data/output/curated/Optimized Parallel attack_result.csv",
     "Random Movements": "data/output/curated/Random movements_result.csv",
-    #"Indirect Attack": "data/output/curated/Indirect attack_result.csv",
+    "Indirect Attack": "data/output/curated/Indirect attack_result.csv",
     # Add other strategies here...
 }
 
