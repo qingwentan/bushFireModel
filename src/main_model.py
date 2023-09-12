@@ -651,22 +651,22 @@ class ForestFire(Model):
 """
 # To be used if you want to run the model without the visualiser:
 temperature = 20 # int 0-60
-truck_strategy = 'Goes to the closest fire' # 7 stratgies
-density = 0.6 # tree-density: 0.01-1.00
+truck_strategy = 'Indirect attack' # 7 stratgies
+density = 0.8 # tree-density: 0.01-1.00
 width = 100 
 height = 100
-num_firetruck = 10 # number of firetrucks 0-30
+num_firetruck = 30 # number of firetrucks 0-30
 vision = 100
-break_width = 0 #Firebreak width 0-10
+break_width = 1 #Firebreak width 0-10
 river_width = 0 # 0-10
-random_fires = 1 # boolean value indicating Spontaneous Fires (Temperature based)
-wind_strength = 8 # wind strength int 0-80
-wind_dir = "\u2B06  North" # "NESW" and 4 across corners
+random_fires = 0 # boolean value indicating Spontaneous Fires (Temperature based)
+wind_strength = 20 # wind strength int 0-80
+wind_dir = "\u2197 North/East" # "NESW" and 4 across corners
 max_speed = 30 # speed of firetrucks 1-30
-sparse_ratio = 0.2 # Ratio of sparse vegetations 0 - 1
-steps_to_extinguishment = 3 # Number of steps needed to extinguish a fire 1-6
-placed_on_edges = 1 # boolean indicating whether the firetrucks are placed randomly over the grid or equispaced on the rim
-seed = 1
+sparse_ratio = 0 # Ratio of sparse vegetations 0 - 1
+steps_to_extinguishment = 1 # Number of steps needed to extinguish a fire 1-6
+placed_on_edges = 0 # boolean indicating whether the firetrucks are placed randomly over the grid or equispaced on the rim
+
 
 fire = ForestFire(
     height,
@@ -685,9 +685,9 @@ fire = ForestFire(
     sparse_ratio,
     steps_to_extinguishment,
     placed_on_edges,
-    #seed
+    
 )
-# print("Model Running...")
+print("Model Running...")
 
 fire.run_model()
 
@@ -702,4 +702,5 @@ agent_variable[1].to_csv("src/test_data/agent_firetruck1.csv")
 #results_firetrucks = fire.dc.get_model_vars_dataframe()
 #print(agent_variable[0])
 #print(agent_variable[1])
+
 """

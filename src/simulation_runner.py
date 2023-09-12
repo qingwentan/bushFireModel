@@ -75,11 +75,11 @@ replicationN = 11
 
 # Open the CSV file and count the number of rows
 # that is the number of different senarios for 1 strategy
-with open(input_path, 'r') as file:
+with open(input_path, 'r', encoding='utf-8') as file:
     num_rows = sum(1 for line in file) - 1
 
 # Open the CSV file, start simulations
-with open(input_path, 'r') as file:
+with open(input_path, 'r', encoding='utf-8') as file:
     # Create a DictReader object
     csv_reader = csv.DictReader(file)
 
