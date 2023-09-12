@@ -18,30 +18,30 @@ Usage:
        Example: 'python src/get_statistics.py "Parallel attack"'
 
 Statistics Retrieved:
+## This calculation is done to extract the important parameters of both the Model_result.csv and 
+   Agent_result.csv and calculate new parameters as explained below:
 
 From "Model_result.csv":
     1. Number of steps/Time to extinguish fire: 
         - Equals the number of steps(rows) excluding the header.
     2. Number of extinguish firecell: 
-        - Value from the last row under 'extinguish' column.
+        - Value of the last row under 'extinguish' column.
     3. Number of burned out cell: 
-        - Value from the last row under 'Burned out' column.
+        - Value of the last row under 'Burned out' column.
     4. Number of cells that were on fire: 
         - Calculated as (8000 - last row of 'Fine') OR (Number of extinguish firecell + Number of burned out cell).
     5. Maximum Growth rate of firecell per step: 
         - Calculated from the 'On Fire' column as the maximum difference between any 2 adjacent cells.
     6. Maximum Extinguish rate of fire cell per step: 
         - Calculated from the 'Extinguish' point as the maximum difference between any 2 adjacent 'On Fire' cells.
-    7. Minimum Extinguish rate of fire per step: 
-        - Calculated similarly to point 6 but takes the minimum value.
+
 
 From "agent_treeCell.csv":
     1. Count of Healthy Tree: 
         - Calculated as (8000) - Count of unhealthy Tree.
-    2. Count of unhealthy Tree.
+    2. Count of unhealthy Tree.## which means Life bar is not 100
     3. Average damaged percentage for overall burned trees: 
         - Calculated as the average 'life bar' for unhealthy trees.
-    4. Check if the burning rate is consistently 20 (verified programmatically, not visually).
 """
 
 import os
