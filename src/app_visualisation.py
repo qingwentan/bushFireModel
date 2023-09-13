@@ -10,8 +10,8 @@ Last Edited:  11 Sep, 2023
 Usage:
     1. Install the necessary packages if haven't install:
         'pip install dash plotly'
-    2. Run the command: 'python <path_to_web_visualisation.py>'
-        Example: 'python src/web_visualisation.py'
+    2. Run the command: 'python <path_to_app_visualisation.py>'
+        Example: 'python3 src/app_visualisation.py'
 """
 
 import dash
@@ -27,16 +27,15 @@ strategy_files = {
     "Goes to the Biggest Fire": "data/output/curated/Goes to the biggest fire_result.csv",
     "Parallel Attack": "data/output/curated/Parallel attack_result.csv",
     "Optimized Parallel Attack": "data/output/curated/Optimized Parallel attack_result.csv",
+    "Optimized Closest": "data/output/curated/Optimized closest_result.csv",
     "Random Movements": "data/output/curated/Random movements_result.csv",
     "Indirect Attack": "data/output/curated/Indirect attack_result.csv",
-    # Add other strategies here...
 }
 
 data_dict = {strategy: pd.read_csv(filepath) for strategy, filepath in strategy_files.items()}
 
 # Add a combined 'Total' dataframe
 data_dict['Total'] = pd.concat(data_dict.values(), ignore_index=True)
-
 
 # choices of strategies for dropdown
 strategies = list(data_dict.keys())
