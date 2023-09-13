@@ -9,7 +9,6 @@ asttokens==2.4.0
 attrs==23.1.0
 backcall==0.2.0
 binaryornot==0.4.4
-bzip2==1.0.8
 ca-certificates==2023.7.22
 cachetools==5.3.1
 certifi==2023.7.22
