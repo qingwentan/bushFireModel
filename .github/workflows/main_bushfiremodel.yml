@@ -60,4 +60,4 @@ jobs:
         with:
           app-name: 'bushfiremodel'
           slot-name: 'Production'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_EC99FA52A97946328873D772AA06CD2C }}
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_44B16D89099847898852938B8E23E2C3 }}
